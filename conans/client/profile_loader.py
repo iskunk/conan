@@ -7,7 +7,7 @@ from jinja2 import Environment, FileSystemLoader
 from conan import conan_version
 from conan.tools.env.environment import ProfileEnvironment
 from conans.client.loader import load_python_file
-from conans.errors import ConanException
+from conans.errors import ConanException, NotFoundException
 from conans.model.conf import ConfDefinition, CORE_CONF_PATTERN
 from conans.model.options import Options
 from conans.model.profile import Profile
@@ -112,7 +112,10 @@ class ProfileLoader:
 
     def _load_profile_plugin(self):
         profile_plugin = os.path.join(self._cache.plugins_path, "profile.py")
-        mod, _ = load_python_file(profile_plugin)
+        try:
+            mod, _ = load_python_file(profile_plugin)
+        except NotFoundException:
+            return
         if hasattr(mod, "profile_plugin"):
             return mod.profile_plugin
 

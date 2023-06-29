@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from conans.client.graph.compute_pid import run_validate_package_id
 from conans.client.loader import load_python_file
-from conans.errors import conanfile_exception_formatter
+from conans.errors import NotFoundException, conanfile_exception_formatter
 
 
 # TODO: Define other compatibility besides applications
@@ -71,8 +71,11 @@ class BinaryCompatibility:
 
     def __init__(self, cache):
         compatibility_file, cppstd_compat_file = get_binary_compatibility_file_paths(cache)
-        mod, _ = load_python_file(compatibility_file)
-        self._compatibility = mod.compatibility
+        try:
+            mod, _ = load_python_file(compatibility_file)
+            self._compatibility = mod.compatibility
+        except NotFoundException:
+            self._compatibility = lambda cf: []
 
     def compatibles(self, conanfile):
         compat_infos = []
